@@ -1,14 +1,26 @@
 function device(id,tag){
     this.id     = id;
     this.tag    = tag;
+    this.status = null;
+    this.sock   = null;
     this.users  = new Set();
     this.playurl = null;
     this.pushurl = null;
+    this.count   = 0;
 };
 
 device.prototype.beginlive = function(){
+    this.playurl = 'http://playurl'
+    this.pushurl = 'http://pushurl'
+    if(this.sock){
+      this.sock.emit("dev",{ctrl:'begin',url:this.playurl});
+    
+    }
 };
 device.prototype.stoplive = function(){
+    if(this.sock){
+      this.sock.emit("dev",{ctrl:'stop'});
+    }
 };
 
 device.prototype.play = function(user){
@@ -26,21 +38,4 @@ device.prototype.stop = function(user){
 };
 
 
-function devmgr(){
-    this.devmap = new Map();
-};
-
-devmgr.prototype.adddev = function(id,tag){
-   let dev = new device(id,tag) ;
-    this.devmap[tag]=dev;
-    return dev;
-};
-devmgr.prototype.deldev = function(tag){
-    let dev = this.devmap[tag];
-    this.devmap.delete(tag);
-    return dev;
-};
-devmgr.prototype.getdev = function(tag){
-    return this.devmap[tag];
-};
-
+module.exports = device;

@@ -22,10 +22,10 @@ socket.on('connect', function () {
     index = 1;
     timer = setInterval(function(){
     let usr = {};
-    usr.name = 'ajdjjfe';
+    usr.uid = 'ajdjjfe';
     usr.tag = '1001';
 
-    socket.sendmsg("usr",dev);
+    socket.emit("usr",usr);
 
 },1000);
     
@@ -34,7 +34,7 @@ socket.on('connect', function () {
 });
 
 socket.on('usr', function (data) {
-    console.log("recv dev => "+data);
+    console.log("recv => "+ JSON.stringify(data));
 });
 
 

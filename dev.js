@@ -24,8 +24,10 @@ socket.on('connect', function () {
     let dev = {};
     dev.id = 'ajdjjfe';
     dev.tag = '1001';
+    dev.status = "ready"
+    console.log('send ' + dev);
 
-    socket.sendmsg("dev",dev);
+    socket.emit("dev",dev);
 
 },1000);
     
@@ -34,7 +36,7 @@ socket.on('connect', function () {
 });
 
 socket.on('dev', function (data) {
-    console.log("recv dev => "+data);
+    console.log("recv => "+ JSON.stringify(data));
 });
 
 
