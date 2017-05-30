@@ -24,28 +24,9 @@ io.on('connection', function (socket) {
     socket.recvIndex = 0;
 
     socket.on('dev', function (data) {
-            console.log("dev=> "+ JSON.stringify(data));
-            let msg = data;
-            let id = msg.id;
-            let tag = msg.tag;
-            let status = msg.status;
 
-
-            if(socket.dev == undefined){
-                socket.dev = new device(id,tag);
-                socket.dev.sock = socket;
-                devmap[tag] = socket.dev;
-            }else{
-                let dev = devmap[tag];
-                if(dev != socket.dev){
-                    dev.sock.disconnect();
-                    return;
-                }
-            }
-
-            socket.dev.status = status;
-            socket.dev.count++;
         try{
+            socket.type ='dev';
             console.log("dev=> "+ JSON.stringify(data));
             let msg = data;
             let id = msg.id;
@@ -71,68 +52,68 @@ io.on('connection', function (socket) {
         }
         catch(err)
         {
-            console.error("dev=> "+err);
+            console.error("dev err=> "+err);
 
         }
 
     });
 
     socket.on('usr', function (data) {
-        console.log("usr=> "+ JSON.stringify(data));
-        let msg = data;
-        let sendmsg = {};
-        let uid = msg.uid;
-        let tag = msg.tag;
-        
+        try{
+            socket.type ='usr';
+            console.log("usr=> "+ data);
+            let sendmsg = {};
+            let tag = data;
 
-        if(socket.uid == undefined)
-        {
-            socket.uid = uid;
-        }
-        else{
-            if(socket.uid != uid){
-                socket.disconnect();
+            let dev = devmap[tag];
+            if(!dev)
+            {
+                sendmsg.status = "offline";
+                socket.emit("usr",sendmsg);
+                console.log("svr 2 usr "+tag+"=> " + JSON.stringify(sendmsg));
                 return;
             }
-        
-        }
+            socket.dev = dev;
 
-        let dev = devmap[tag];
-        if(!dev)
-        {
-            sendmsg.status = "offline";
+            sendmsg.status = "online";
+            sendmsg.url = dev.play(socket.id);
+
             socket.emit("usr",sendmsg);
-            return;
+            console.log("svr 2 usr "+tag+"=> " + JSON.stringify(sendmsg));
         }
+        catch(err)
+        {
+            console.error("usr err => "+err);
 
-        socket.dev = dev;
-
-        sendmsg.status = "online";
-        sendmsg.url = dev.play(uid);
-
-        socket.emit("usr",sendmsg);
+        }
 
     });
 
 
     socket.on('disconnect', function () {
-        console.log("disconnect");
+        try{
+            if(socket.type == 'usr' && socket.dev){
+                socket.dev.stop(socket.id);
+                socket.dev = null;
+                console.log("usr disconnect");
+                return;
+            }
 
-        if(socket.uid && socket.dev){
-            socket.dev.stop(socket.uid);
-            socket.dev = null;
-            socket.uid = null;
-            return;
+            if(socket.type == 'dev' &&socket.dev){
+                console.log("dev "+socket.dev.tag+" disconnect");
+
+                devmap.delete(socket.dev.tag);
+                socket.dev.sock = null;
+                socket.dev.status = null;
+                socket.dev = null;
+                return;
+
+            }
+            console.log("disconnect");
+        }catch(err){
+            console.error("dis err => "+err);
         }
 
-        if(socket.dev){
-
-            devmap.delete(socket.dev.tag);
-            socket.dev.sock = null;
-            socket.dev.status = null;
-            socket.dev = null;
-
-        }
 
     });
 });

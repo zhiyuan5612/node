@@ -1,0 +1,72 @@
+<html>  
+  <head>  
+  <title>视频</title>  
+  <meta charset="utf-8">  
+  <link href="http://vjs.zencdn.net/5.5.3/video-js.css" rel="stylesheet">  
+  <!-- If you'd like to support IE8 -->  
+  <script src="http://vjs.zencdn.net/ie8/1.1.1/videojs-ie8.min.js"></script>  
+</head>  
+<body>  
+  <h1>视频</h1>  
+ <video id="my-video" class="video-js" controls preload="auto" width="640" height="300"  
+ data-setup="{}">  
+    <source src="" type="rtmp/flv">  
+ </video>  
+ <script src="http://vjs.zencdn.net/5.5.3/video.js"></script>  
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+ <script> 
+$(function() {
+    function getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg); 
+        if (r != null) return unescape(r[2]); return null; 
+    }
+
+    var tag = getUrlParam('tag');
+    if(tag == null) return;
+    var socket = io();
+
+
+    socket.on('connect', function () {
+        socket.emit("usr",tag);
+        console.log("connection");
+
+    });
+
+    socket.on('usr', function (data) {
+        console.log("recv => "+ JSON.stringify(data));
+        if(data.status == 'online'){
+            var myPlayer = videojs("my-video",{},function(){
+                myPlayer = this;
+                myPlayer.src(data.url);  //重置video的srch
+                myPlayer.load(data.url);  //使video重新加
+                this.play(); 
+            });
+        }
+        else
+        {
+            $("h1").text('设备不在线');
+            socket.disconnect();
+        
+        }
+    });
+
+
+    socket.on('disconnect', function () {
+        console.log('you have been disconnected');
+    });
+
+    socket.on('reconnect', function () {
+        console.log('you have been reconnected');
+    });
+
+    socket.on('reconnect_error', function () {
+        console.log('attempt to reconnect has failed');
+    });
+
+});
+
+</script>
+</body>  
+</html>  

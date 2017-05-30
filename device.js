@@ -1,3 +1,5 @@
+var crypto = require('crypto');
+
 function device(id,tag){
     this.id     = id;
     this.tag    = tag;
@@ -9,16 +11,35 @@ function device(id,tag){
     this.count   = 0;
 };
 
+device.prototype.createUrl = function(){
+    let curr = new Date()
+    let path = "/hz-live/"+this.id;
+    let pathe = path+"?e=" + parseInt(curr.getTime()/1000 + 600);
+
+    let token = crypto.createHmac('sha1', 'bI0Hp_txB-dAg04W3J41CksFr3fBcAdbupKVqpMf').update(pathe).digest().toString('base64');
+    token= token.replace(/\+/g,'-');
+    token = token.replace(/\//g,'_');
+ 
+
+    this.pushurl = 'rtmp://pili-publish.hzlive.shenzy.com.cn' + pathe + "&token="+"Ktd9GidrX9-M4NGSIfvuGoG_QnT3b5wtD0Lpy7Ul"+":"+ token;
+    this.playurl = 'rtmp://pili-live-rtmp.hzlive.shenzy.com.cn' + path;
+    console.log("生成推流url " + this.pushurl);
+
+}
+
 device.prototype.beginlive = function(){
-    this.playurl = 'http://playurl'
-    this.pushurl = 'http://pushurl'
+    this.createUrl();
     if(this.sock){
-      this.sock.emit("dev",{ctrl:'begin',url:this.playurl});
+        let msg = {ctrl:'begin',url:this.pushurl};
+        console.log("dev "+this.tag+" => ",JSON.stringify(msg));
+        this.sock.emit("dev",msg);
     
     }
 };
 device.prototype.stoplive = function(){
     if(this.sock){
+        let msg = {ctrl:'stop'};
+        console.log("dev "+this.tag+" => ",JSON.stringify(msg));
       this.sock.emit("dev",{ctrl:'stop'});
     }
 };
