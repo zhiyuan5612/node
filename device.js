@@ -8,12 +8,13 @@ function device(id,tag){
     this.users  = new Set();
     this.playurl = null;
     this.pushurl = null;
+    this.cam     = 0;
     this.count   = 0;
 };
 
 device.prototype.createUrl = function(){
     let curr = new Date()
-    let path = "/hz-live/"+this.id;
+    let path = "/hz-live/"+this.tag;
     let pathe = path+"?e=" + parseInt(curr.getTime()/1000 + 600);
 
     let token = crypto.createHmac('sha1', 'bI0Hp_txB-dAg04W3J41CksFr3fBcAdbupKVqpMf').update(pathe).digest().toString('base64');
@@ -30,7 +31,7 @@ device.prototype.createUrl = function(){
 device.prototype.beginlive = function(){
     this.createUrl();
     if(this.sock){
-        let msg = {ctrl:'begin',url:this.pushurl};
+        let msg = {ctrl:'begin',url:this.pushurl,cam:this.cam};
         console.log("dev "+this.tag+" => ",JSON.stringify(msg));
         this.sock.emit("dev",msg);
     
@@ -44,8 +45,12 @@ device.prototype.stoplive = function(){
     }
 };
 
-device.prototype.play = function(user){
+device.prototype.play = function(user,cam){
+    
+    if(cam != 1) cam = 0;
+    
     if(this.users.size == 0){
+        this.cam = cam;
         this.beginlive();
     }
     this.users.add(user);

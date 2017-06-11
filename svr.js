@@ -61,9 +61,10 @@ io.on('connection', function (socket) {
     socket.on('usr', function (data) {
         try{
             socket.type ='usr';
-            console.log("usr=> "+ data);
+            console.log("usr=> "+ JSON.stringify(data));
             let sendmsg = {};
-            let tag = data;
+            let tag = data.tag;
+            let cam = data.cam;
 
             let dev = devmap[tag];
             if(!dev)
@@ -76,7 +77,7 @@ io.on('connection', function (socket) {
             socket.dev = dev;
 
             sendmsg.status = "online";
-            sendmsg.url = dev.play(socket.id);
+            sendmsg.url = dev.play(socket.id,cam);
 
             socket.emit("usr",sendmsg);
             console.log("svr 2 usr "+tag+"=> " + JSON.stringify(sendmsg));

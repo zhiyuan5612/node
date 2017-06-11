@@ -24,12 +24,14 @@ $(function() {
     }
 
     var tag = getUrlParam('tag');
+    var cam = getUrlParam('cam');
     if(tag == null) return;
+    if(cam == null) cam = 0;
     var socket = io();
 
 
     socket.on('connect', function () {
-        socket.emit("usr",tag);
+        socket.emit("usr",{tag:tag,cam:cam});
         console.log("connection");
 
     });
