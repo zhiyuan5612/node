@@ -1,4 +1,5 @@
 var crypto = require('crypto');
+var config = require('./config.js')
 
 function device(id,tag){
     this.id     = id;
@@ -14,16 +15,18 @@ function device(id,tag){
 
 device.prototype.createUrl = function(){
     let curr = new Date()
-    let path = "/hz-live/"+this.tag;
+    let path = config.space+this.tag;
     let pathe = path+"?e=" + parseInt(curr.getTime()/1000 + 600);
 
-    let token = crypto.createHmac('sha1', 'bI0Hp_txB-dAg04W3J41CksFr3fBcAdbupKVqpMf').update(pathe).digest().toString('base64');
+    let token = crypto.createHmac('sha1', config.secret)
+        .update(pathe).digest().toString('base64');
     token= token.replace(/\+/g,'-');
     token = token.replace(/\//g,'_');
  
 
-    this.pushurl = 'rtmp://pili-publish.hzlive.shenzy.com.cn' + pathe + "&token="+"Ktd9GidrX9-M4NGSIfvuGoG_QnT3b5wtD0Lpy7Ul"+":"+ token;
-    this.playurl = 'rtmp://pili-live-rtmp.hzlive.shenzy.com.cn' + path;
+    this.pushurl = config.pushurl + pathe 
+        + "&token="+config.access+":"+ token;
+    this.playurl = config.playurl + path;
     console.log("生成推流url " + this.pushurl);
 
 }
