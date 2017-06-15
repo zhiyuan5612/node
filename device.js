@@ -22,8 +22,6 @@ device.prototype.createUrl = function(){
     this.playurl = Pili.rtmpPlayURL(config.playurl, config.space, this.tag);
     console.log("生成推流url " + this.pushurl);
 
-    return;
-
     hub.createStream(this.tag, function(err, stream) {
         if (!err) {
             console.log(stream);
