@@ -1,5 +1,8 @@
 var crypto = require('crypto');
 var config = require('./config.js')
+var Pili = require('piliv2');
+var credentials = new Pili.Credentials(config.access, config.secret);
+var hub = new Pili.Hub(credentials, config.space);
 
 function device(id,tag){
     this.id     = id;
@@ -14,20 +17,21 @@ function device(id,tag){
 };
 
 device.prototype.createUrl = function(){
-    let curr = new Date()
-    let path = config.space+this.tag;
-    let pathe = path+"?e=" + parseInt(curr.getTime()/1000 + 600);
-
-    let token = crypto.createHmac('sha1', config.secret)
-        .update(pathe).digest().toString('base64');
-    token= token.replace(/\+/g,'-');
-    token = token.replace(/\//g,'_');
- 
-
-    this.pushurl = config.pushurl + pathe 
-        + "&token="+config.access+":"+ token;
-    this.playurl = config.playurl + path;
+    
+    this.pushurl = Pili.publishURL(credentials,config.pushurl, config.space, this.tag, 10);
+    this.playurl = Pili.rtmpPlayURL(config.playurl, config.space, this.tag);
     console.log("生成推流url " + this.pushurl);
+
+    return;
+
+    hub.createStream(this.tag, function(err, stream) {
+        if (!err) {
+            console.log(stream);
+        } else {
+            // Log error
+            console.log(err, err.errorCode, err.httpCode);
+        }
+    });
 
 }
 
