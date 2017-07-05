@@ -40,7 +40,8 @@ $(function() {
         console.log("recv => "+ JSON.stringify(data));
         if(data.status == 'online'){
             jwplayer('mediaspace').setup({
-                'file':data.url
+                'file':data.url,
+                flashplayer: '/jwplayer/jwplayer.flash.swf'
             });
         }
         else
