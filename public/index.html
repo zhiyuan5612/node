@@ -4,13 +4,14 @@
   <meta charset="utf-8">  
   <script src="http://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
   <script src="http://cdn.bootcss.com/socket.io/2.0.3/socket.io.slim.js"></script>
-  
-    <script src="http://content.jwplatform.com/libraries/kRs4pYQF.js"></script>
+<script src="http://content.jwplatform.com/libraries/kRs4pYQF.js"></script>
                     
   
+    <script>
+    var socket;
   </script>
 </head>  
-<body>  
+    <body onbeforeunload="socket.disconnect();">
   <h1>视频</h1>  
 	<div id='mediaspace'></div>
     <a href="about:blank">关闭</a>
@@ -27,10 +28,10 @@ $(function() {
     var cam = getUrlParam('cam');
     if(tag == null) return;
     if(cam == null) cam = 0;
-    var socket = io();
 
     var myPlayer;
 
+    socket = io();
     socket.on('connect', function () {
         socket.emit("usr",{tag:tag,cam:cam});
         console.log("connection");
